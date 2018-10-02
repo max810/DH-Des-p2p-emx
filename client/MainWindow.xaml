@@ -1,0 +1,33 @@
+﻿<Window x:Class="BPiDLab2.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BPiDLab2"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        <Grid Name="MainUI" Visibility="Hidden">
+            <StackPanel Orientation="Vertical" VerticalAlignment="Top" Margin="0,0,513.333,0">
+                <Label Content="Текст сообщения" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Margin="0, 100, 0, 0" VerticalAlignment="Top" Width="164"/>
+                <TextBox x:Name="Input"  Height="144"  TextWrapping="Wrap" VerticalAlignment="Top" Margin="10,0,0,0" HorizontalAlignment="Left" Width="260"/>
+                <Button Content="Отправить сообщение" HorizontalAlignment="Center" Margin="0, 25, 0,0 " VerticalAlignment="Top" Width="143" Height="48" Name="SendMessageButton" Click="SendMessageButtonClick"/>
+            </StackPanel>
+            <RichTextBox x:Name="Output" IsReadOnly="True" HorizontalAlignment="Left" Margin="312,43,0,0" VerticalAlignment="Top" Height="348" Width="443">
+                <FlowDocument x:Name="ChatContent">
+                    <Paragraph Foreground="Blue" TextAlignment="Center" FontSize="16" FontWeight="Bold">
+                        Добро пожаловать в чат!
+                    </Paragraph>
+                </FlowDocument>
+            </RichTextBox>
+            <Label Content="Чат" HorizontalContentAlignment="Center" HorizontalAlignment="Left" Margin="470,10,0,0" VerticalAlignment="Top" Width="143" Height="28"/>
+        </Grid>
+
+        <Grid Name="UsernameUI" Visibility="Visible">
+            <Label FontSize="16" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" HorizontalAlignment="Left" Margin="282,187,0,0" VerticalAlignment="Top" Height="33" Width="37" Content="ник:"/>
+            <TextBox Name="UsernameInput" FontSize="16" FontWeight="Bold"  HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Left" Margin="340,187,0,0" VerticalAlignment="Top" Height="33" Width="151" Text="Санек"/>
+            <Label HorizontalContentAlignment="Center" Name="UsernameLabel" FontSize="16" Content="ВВЕДИТЕ НИК" HorizontalAlignment="Left" Margin="233,151,0,0" VerticalAlignment="Top" Width="307"/>
+            <Button Name="CheckUsernameButton" Content="Проверить" HorizontalAlignment="Left" Margin="282,237,0,0" VerticalAlignment="Top" Width="209" Height="36" Click="CheckUsernameButtonClick"/>
+        </Grid>
+    </Grid>
+</Window>
