@@ -5,12 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BPiDLab2"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="450" Width="800" Closed="Window_Closed">
     <Grid>
         <Grid Name="MainUI" Visibility="Hidden">
             <StackPanel Orientation="Vertical" VerticalAlignment="Top" Margin="0,0,513.333,0">
                 <Label Content="Текст сообщения" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Margin="0, 100, 0, 0" VerticalAlignment="Top" Width="164"/>
-                <TextBox x:Name="Input"  Height="144"  TextWrapping="Wrap" VerticalAlignment="Top" Margin="10,0,0,0" HorizontalAlignment="Left" Width="260"/>
+                <TextBox MaxLength="120" TextWrapping="WrapWithOverflow" x:Name="Input"  Height="144" AcceptsReturn="True" VerticalAlignment="Top" Margin="10,0,0,0" HorizontalAlignment="Left" Width="260"/>
                 <Button Content="Отправить сообщение" HorizontalAlignment="Center" Margin="0, 25, 0,0 " VerticalAlignment="Top" Width="143" Height="48" Name="SendMessageButton" Click="SendMessageButtonClick"/>
             </StackPanel>
             <RichTextBox x:Name="Output" IsReadOnly="True" HorizontalAlignment="Left" Margin="312,43,0,0" VerticalAlignment="Top" Height="348" Width="443">

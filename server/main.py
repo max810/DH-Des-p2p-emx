@@ -117,7 +117,6 @@ def on_chat_message(client, data):
     for curr_client in server.clients:
         curr_client_id = curr_client['id']
         curr_client_pbk = client_public_keys[curr_client_id]
-        curr_username = usernames[curr_client_id]
 
         message_encrypted = encryptb64(message_bytes, curr_client_pbk).decode('ascii')
 
@@ -137,7 +136,23 @@ def on_chat_message(client, data):
 
 
 def on_client_left_chat(client, data):
-    pass
+    client_id = client['id']
+    username = usernames[client_id]
+    if client_id in usernames:
+        del usernames[client_id]
+    if client_id in client_public_keys:
+        del client_public_keys[client_id]
+    if client_id in server_private_keys:
+        del server_private_keys[client_id]
+
+    server.send_message_to_all(
+        format_message(
+            'client_left_chat',
+            {
+                'username': username
+            }
+        )
+    )
 
 
 handlers = {
@@ -150,6 +165,7 @@ handlers = {
 server = WebsocketServer(5000, host='127.0.0.1', loglevel=logging.DEBUG)
 server.set_fn_new_client(on_new_client)
 server.set_fn_message_received(on_message)
+server.set_fn_client_left(on_client_left_chat)
 server.run_forever()
 
 # CORS(app, origins='*')

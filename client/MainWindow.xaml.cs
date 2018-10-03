@@ -32,14 +32,17 @@ namespace BPiDLab2
 
         public MainWindow()
         {
+            // MAXIMUM 245 bytes
             InitializeComponent();
             MessageHandlers = new Dictionary<string, Action<Dictionary<string, string>>>()
             {
                 { "username_available", OnUsernameAvailable },
                 { "registration_success", OnRegistrationSuccess },
                 { "client_joined_chat", OnClientJoinedChat },
+                { "client_left_chat", OnClientLeftChat },
                 { "chat_message_received", OnChatMessageReceived },
-                { "my_chat_message_received", OnMyChatMessageReceived }
+                { "my_chat_message_received", OnMyChatMessageReceived },
+                { "username_taken", OnUsernameTaken }
             };
 
             clientPrkParameters = GenerateNewPrk();
@@ -53,6 +56,11 @@ namespace BPiDLab2
             };
 
             socket.Connect();
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            socket.Close(CloseStatusCode.Normal);
         }
 
         private Action<Dictionary<string, string>> GetHandler(Message msgData)
@@ -175,6 +183,7 @@ namespace BPiDLab2
             string message = Input.Text;
 
             SendChatMessage(username, message);
+            this.Dispatcher.BeginInvoke((Action)(() => Input.Text = ""));
         }
 
         private void SendChatMessage(string username, string chatTextMessage)
@@ -232,10 +241,25 @@ namespace BPiDLab2
 
         }
 
+
+        private void OnUsernameTaken(Dictionary<string, string> obj)
+        {
+            this.Dispatcher.BeginInvoke((Action)(() =>
+            {
+                UsernameInput.IsReadOnly = false;
+                UsernameLabel.Content = "НИК ЗАНЯТ. Другой избери";
+                UsernameInput.SelectAll();
+                CheckUsernameButton.IsEnabled = true;
+            }));
+        }
+
         private void ShowMainUI()
         {
             UsernameUI.Visibility = Visibility.Hidden;
             MainUI.Visibility = Visibility.Visible;
+            UsernameInput.Visibility = Visibility.Visible;
+            UsernameInput.IsReadOnly = true;
+            UsernameInput.Margin = new Thickness(20, 20, 0, 0);
             Username = UsernameInput.Text;
         }
 
@@ -252,6 +276,14 @@ namespace BPiDLab2
             string username = data["username"];
             this.Dispatcher.BeginInvoke((Action)(() => PrintMessage(username, " has joined chat.", true)));
         }
+
+
+        private void OnClientLeftChat(Dictionary<string, string> data)
+        {
+            string username = data["username"];
+            this.Dispatcher.BeginInvoke((Action)(() => PrintMessage(username, " has left chat.", true)));
+        }
+
 
         private void OnChatMessageReceived(Dictionary<string, string> data)
         {
