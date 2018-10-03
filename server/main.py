@@ -115,6 +115,8 @@ def on_chat_message(client, data):
     message_bytes = decrypt(base64.b64decode(message), server_private_keys[client_id])
 
     for curr_client in server.clients:
+        if curr_client['id'] not in usernames:
+            continue
         curr_client_id = curr_client['id']
         curr_client_pbk = client_public_keys[curr_client_id]
 
@@ -137,22 +139,23 @@ def on_chat_message(client, data):
 
 def on_client_left_chat(client, data):
     client_id = client['id']
-    username = usernames[client_id]
     if client_id in usernames:
+        username = usernames[client_id]
+
+        server.send_message_to_all(
+            format_message(
+                'client_left_chat',
+                {
+                    'username': username
+                }
+            )
+        )
+
         del usernames[client_id]
     if client_id in client_public_keys:
         del client_public_keys[client_id]
     if client_id in server_private_keys:
         del server_private_keys[client_id]
-
-    server.send_message_to_all(
-        format_message(
-            'client_left_chat',
-            {
-                'username': username
-            }
-        )
-    )
 
 
 handlers = {

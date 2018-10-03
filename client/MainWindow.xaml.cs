@@ -258,9 +258,8 @@ namespace BPiDLab2
             UsernameUI.Visibility = Visibility.Hidden;
             MainUI.Visibility = Visibility.Visible;
             UsernameInput.Visibility = Visibility.Visible;
-            UsernameInput.IsReadOnly = true;
-            UsernameInput.Margin = new Thickness(20, 20, 0, 0);
             Username = UsernameInput.Text;
+            UsernameBoxReadonly.Text = Username;
         }
 
         private void OnRegistrationSuccess(Dictionary<string, string> data)

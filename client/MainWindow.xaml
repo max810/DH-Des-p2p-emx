@@ -9,7 +9,11 @@
     <Grid>
         <Grid Name="MainUI" Visibility="Hidden">
             <StackPanel Orientation="Vertical" VerticalAlignment="Top" Margin="0,0,513.333,0">
-                <Label Content="Текст сообщения" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Margin="0, 100, 0, 0" VerticalAlignment="Top" Width="164"/>
+                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Height="50">
+                    <Label VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontWeight="Bold">НИК</Label>
+                    <TextBox Name="UsernameBoxReadonly" IsReadOnly="True" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontSize="16" MinWidth="150"></TextBox>
+                </StackPanel>
+                <Label Content="Текст сообщения" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Margin="0, 50, 0, 0" VerticalAlignment="Top" Width="164"/>
                 <TextBox MaxLength="120" TextWrapping="WrapWithOverflow" x:Name="Input"  Height="144" AcceptsReturn="True" VerticalAlignment="Top" Margin="10,0,0,0" HorizontalAlignment="Left" Width="260"/>
                 <Button Content="Отправить сообщение" HorizontalAlignment="Center" Margin="0, 25, 0,0 " VerticalAlignment="Top" Width="143" Height="48" Name="SendMessageButton" Click="SendMessageButtonClick"/>
             </StackPanel>
