@@ -242,7 +242,6 @@ class WebSocketHandler(StreamRequestHandler):
         #     x = self.rfile.read(8)
         #     payload_length = struct.unpack(">Q", x)[0]
 
-
         # payload_length = struct.unpack(">Q", self.rfile.read(8))[0]
         masks = self.read_bytes(4)
         message_bytes = bytearray()

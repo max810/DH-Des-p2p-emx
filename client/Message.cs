@@ -9,7 +9,6 @@ namespace BPiDLab2
     public class Message
     {
         public string event_type;
-        public string[] message_blocks = { };
         public Dictionary<string, string> data = new Dictionary<string, string> { };
 
         public Message()

@@ -43,7 +43,7 @@
 
         <Grid Name="UsernameUI" Visibility="Visible">
             <Label FontSize="16" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" HorizontalAlignment="Left" Margin="282,187,0,0" VerticalAlignment="Top" Height="33" Width="37" Content="ник:"/>
-            <TextBox Name="UsernameInput" FontSize="16" FontWeight="Bold"  HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Left" Margin="340,187,0,0" VerticalAlignment="Top" Height="33" Width="151" Text="Санек"/>
+            <TextBox Name="UserNameInput" FontSize="16" FontWeight="Bold"  HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Left" Margin="340,187,0,0" VerticalAlignment="Top" Height="33" Width="151" Text="Санек"/>
             <Label HorizontalContentAlignment="Center" Name="UsernameLabel" FontSize="16" Content="ВВЕДИТЕ НИК" HorizontalAlignment="Left" Margin="233,151,0,0" VerticalAlignment="Top" Width="307"/>
             <Button Name="CheckUsernameButton" Content="Проверить" HorizontalAlignment="Left" Margin="282,237,0,0" VerticalAlignment="Top" Width="209" Height="36" Click="CheckUsernameButtonClick"/>
         </Grid>

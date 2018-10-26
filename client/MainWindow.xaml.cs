@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Windows.Documents;
 using System.Windows.Media;
 using WebSocketSharp;
+using WebSocketSharp.Server;
 using System.Web.Script.Serialization;
 using System.Threading.Tasks;
 using System.Threading;
@@ -21,63 +22,72 @@ namespace BPiDLab2
     public partial class MainWindow : Window
     {
         private const int KeyLength = 2048;
-        private WebSocket socket;
+        private WebSocket socketMiddle;
+        private WebSocketServer socketServer;
         private JavaScriptSerializer json = new JavaScriptSerializer();
         private RSACryptoServiceProvider rsa;
+        private DESCryptoServiceProvider des;
         private string serverUrl = "ws://localhost:5000";
-        private RSAParameters serverPbkParameters;
-        private RSAParameters clientPrkParameters;
-        private string Username;
+        private string broadcastUrlF = "ws://localhost:{0}/msg";
+        private string MyName;
+        private List<User> Users = new List<User>();
         private Dictionary<string, Action<Message>> MessageHandlers;
+        //private Dictionary<string, string> UserAddresses;
+        private Dictionary<string, WebSocket> UserSockets = new Dictionary<string, WebSocket>();
+
 
         public MainWindow()
         {
+            // 1 client, 1 server, 1 app ))
             InitializeComponent();
             MessageHandlers = new Dictionary<string, Action<Message>>()
             {
-                { "username_available", OnUsernameAvailable },
+                { "user_name_available", OnUsernameAvailable },
                 { "registration_success", OnRegistrationSuccess },
                 { "client_joined_chat", OnClientJoinedChat },
                 { "client_left_chat", OnClientLeftChat },
-                { "chat_message_received", OnChatMessageReceived },
-                { "my_chat_message_received", OnMyChatMessageReceived },
-                { "username_taken", OnUsernameTaken }
+                { "chat_message", OnChatMessageReceived },
+                { "user_name_taken", OnUsernameTaken }
             };
 
-            clientPrkParameters = GenerateNewPrk();
+            socketMiddle = new WebSocket(serverUrl);
+            InitializeSocket(socketMiddle);
+            socketMiddle.Connect();
+        }
 
-            socket = new WebSocket(serverUrl);
-            socket.OnMessage += (sender, e) =>
-            {
-                Message msg = json.Deserialize<Message>(e.Data);
-                var handler = MessageHandlers[msg.event_type];
-                handler(msg);
-            };
+        private void InitializeSocket(WebSocket socket)
+        {
+            socket.OnMessage += (sender, e) => OnMessage(e);
+        }
 
-            socket.Connect();
+        private void OnMessage(MessageEventArgs e)
+        {
+            Message msg = json.Deserialize<Message>(e.Data);
+            var handler = MessageHandlers[msg.event_type];
+            handler(msg);
         }
 
         private void Window_Closed(object sender, EventArgs e)
         {
-            socket.Close(CloseStatusCode.Normal);
+            socketMiddle.Close(CloseStatusCode.Normal);
         }
 
         private void CheckUsernameButtonClick(object sender, RoutedEventArgs e)
         {
-            string username = UsernameInput.Text;
-            UsernameInput.IsReadOnly = true;
+            string userName = UserNameInput.Text;
+            UserNameInput.IsReadOnly = true;
             CheckUsernameButton.IsEnabled = false;
-            Username = UsernameInput.Text;
+            MyName = UserNameInput.Text;
 
             UsernameLabel.Content = "ПРОВЕРЯЕМ НИК...";
 
-            SendCheckUsername(username);
+            SendCheckUsername(userName);
         }
 
-        private void PrintMessage(string username, string message, bool useSystemColor = false)
+        private void PrintMessage(string userName, string message, bool useSystemColor = false)
         {
             Paragraph p = new Paragraph();
-            Run user = new Run($"@{username}: ")
+            Run user = new Run($"@{userName}: ")
             {
                 FontWeight = FontWeights.Bold,
                 Foreground = useSystemColor ? Brushes.DarkRed : Brushes.DarkGreen,
@@ -93,90 +103,98 @@ namespace BPiDLab2
 
         private void SendMessageButtonClick(object sender, EventArgs e)
         {
-            string username = Username;
+            string userName = MyName;
             string message = Input.Text;
 
-            SendChatMessage(username, message);
+            SendChatMessage(userName, message);
             ChangeUIThreadSafe(() => Input.Text = "");
         }
 
-        private void SendChatMessage(string username, string chatTextMessage)
+        private void SendChatMessage(string userName, string chatTextMessage)
         {
-            List<string> messagesb64 = new List<string>();
-            byte[] textDecoded = Encoding.UTF8.GetBytes(chatTextMessage);
-            while (textDecoded.Any())
-            {
-                byte[] block = textDecoded.Take(245).ToArray();
-                byte[] blockEncrypted = Encrypt(block, serverPbkParameters);
-                messagesb64.Add(Convert.ToBase64String(blockEncrypted));
-                textDecoded = textDecoded.Skip(245).ToArray();
-            }
+            //List<string> messagesb64 = new List<string>();
+            //byte[] textDecoded = Encoding.UTF8.GetBytes(chatTextMessage);
+            //while (textDecoded.Any())
+            //{
+            //    byte[] block = textDecoded.Take(245).ToArray();
+            //    byte[] blockEncrypted = Encrypt(block, serverPbkParameters);
+            //    messagesb64.Add(Convert.ToBase64String(blockEncrypted));
+            //    textDecoded = textDecoded.Skip(245).ToArray();
+            //}
 
-            string totalTextb64 = string.Join(Environment.NewLine, messagesb64);
-            ChangeUIThreadSafe(() => ClientEncryptedOutput.Text = totalTextb64);
+            //string totalTextb64 = string.Join(Environment.NewLine, messagesb64);
+            //ChangeUIThreadSafe(() => ClientEncryptedOutput.Text = totalTextb64);
 
-            clientPrkParameters = GenerateNewPrk();
-            string[] clientPbkB64 = PbkToBase64(clientPrkParameters);
+            //clientPrkParameters = GenerateNewPrk();
+            //string[] clientPbkB64 = PbkToBase64(clientPrkParameters);
             var message = new Message("chat_message")
             {
-                message_blocks = messagesb64.ToArray(),
                 data = new Dictionary<string, string>
                 {
-                    { "e", clientPbkB64[0] },
-                    { "n", clientPbkB64[1] },
+                    { "user_name",  userName },
+                    { "message", chatTextMessage },
                 }
             };
 
-            SendMessage(message);
+            foreach(var kv in UserSockets)
+            {
+                var socket = kv.Value;
+                SendMessage(message, socket);
+            }
+            ChangeUIThreadSafe(() => PrintMessage(userName + "[YOU]", chatTextMessage, useSystemColor: true));
         }
 
-        private void SendCheckUsername(string username)
+        private void SendCheckUsername(string userName)
         {
-            var message = new Message("check_username")
+            var message = new Message("check_user_name")
             {
                 data = new Dictionary<string, string>
                 {
-                    { "username", username }
+                    { "user_name", userName }
                 }
             };
 
-            SendMessage(message);
+            SendMessage(message, socketMiddle);
         }
 
-        private void SendMessage(Message message)
+        private void SendMessageBroadcast(Message message)
+        {
+            string data = json.Serialize(message);
+            //foreach(var socket in UserSockets.Values)
+            //{
+            //    socket.Send(data);
+            //}
+            socketServer.WebSocketServices.Broadcast(data);
+
+        }
+
+        private void SendMessage(Message message, WebSocket socket)
         {
             string data = json.Serialize(message);
             socket.Send(data);
-
-            //socket.Send(new string('c', 100_000));
         }
 
         private void OnUsernameAvailable(Message msg)
         {
-            string[] pbk64 = PbkToBase64(clientPrkParameters);
-
             Message message = new Message("register")
             {
                 data = new Dictionary<string, string>
                 {
-                    { "username", Username },
-                    { "e", pbk64[0] },
-                    { "n", pbk64[1] }
+                    { "user_name", MyName },
                 }
             };
 
-            SendMessage(message);
-
-            ChangeUIThreadSafe(ShowMainUI);
+            SendMessage(message, socketMiddle);
         }
+
 
         private void OnUsernameTaken(Message msg)
         {
             ChangeUIThreadSafe(() =>
             {
-                UsernameInput.IsReadOnly = false;
+                UserNameInput.IsReadOnly = false;
                 UsernameLabel.Content = "НИК ЗАНЯТ. Другой избери";
-                UsernameInput.SelectAll();
+                UserNameInput.SelectAll();
                 CheckUsernameButton.IsEnabled = true;
             });
         }
@@ -185,113 +203,69 @@ namespace BPiDLab2
         {
             UsernameUI.Visibility = Visibility.Hidden;
             MainUI.Visibility = Visibility.Visible;
-            UsernameInput.Visibility = Visibility.Visible;
-            Username = UsernameInput.Text;
-            UsernameBoxReadonly.Text = Username;
+            UserNameInput.Visibility = Visibility.Visible;
+            MyName = UserNameInput.Text;
+            UsernameBoxReadonly.Text = MyName;
         }
 
         private void OnRegistrationSuccess(Message msg)
         {
-            SetNewServerPbk(msg.data);
+            string port = msg.data["port"];
+            //string myServerUrl = string.Format(broadcastUrlF, port);
+            socketServer = new WebSocketServer($"ws://localhost:{port}");
+            socketServer.AddWebSocketService("/msg", () => new ActionBehaviour(OnMessage));
+            socketServer.Start();
+
+            var users = json.Deserialize<UserServerFormatted[]>(msg.data["users"]);
+            foreach (var user in users)
+            {
+                User usr = user;
+                var socket = new WebSocket(string.Format(broadcastUrlF, usr.Port));
+                InitializeSocket(socket);
+                UserSockets[usr.UserName] = socket;
+                socket.OnOpen += (sender, e) =>
+                {
+                    var message = new Message("client_joined_chat")
+                    {
+                        data = new Dictionary<string, string>
+                        {
+                            { "user_name", MyName },
+                            { "port", port }
+                        }
+                    };
+
+                    SendMessage(message, socket);
+                };
+                socket.Connect();
+                // TODO DIFFIE HELLMAN HERE
+            }
+            ChangeUIThreadSafe(ShowMainUI);
         }
 
 
         private void OnClientJoinedChat(Message msg)
         {
-            string username = msg.data["username"];
-            ChangeUIThreadSafe(() => PrintMessage(username, " has joined chat.", useSystemColor: true));
+            string userName = msg.data["user_name"];
+            string port = msg.data["port"];
+            var socket = new WebSocket(string.Format(broadcastUrlF, port));
+            UserSockets[userName] = socket;
+            socket.Connect();
+            ChangeUIThreadSafe(() => PrintMessage(userName, " has joined chat.", useSystemColor: true));
         }
 
 
         private void OnClientLeftChat(Message msg)
         {
-            string username = msg.data["username"];
-            ChangeUIThreadSafe(() => PrintMessage(username, " has left chat.", useSystemColor: true));
+            string userName = msg.data["user_name"];
+            ChangeUIThreadSafe(() => PrintMessage(userName, " has left chat.", useSystemColor: true));
         }
 
 
         private void OnChatMessageReceived(Message msg)
         {
-            string username = msg.data["username"];
-            string[] messageBlocksEncryptedB64 = msg.message_blocks;
-            string allTextEncrypted = string.Join(Environment.NewLine, messageBlocksEncryptedB64);
-            ChangeUIThreadSafe(() => ServerEncryptedOutput.Text = allTextEncrypted);
-
-            List<byte[]> decryptedBlocks = new List<byte[]>();
-            foreach (var block in messageBlocksEncryptedB64)
-            {
-                var blockBytes = Convert.FromBase64String(block);
-                var bytesDecrypted = Decrypt(blockBytes, clientPrkParameters);
-                decryptedBlocks.Add(bytesDecrypted);
-            }
-
-            // SelectMany == Flatten
-            byte[] allBytesDecrypted = decryptedBlocks.SelectMany(x => x).ToArray();
-            var msgDecrypted = Encoding.UTF8.GetString(allBytesDecrypted);
-            ChangeUIThreadSafe(() => PrintMessage(username, msgDecrypted));
-        }
-
-        private void OnMyChatMessageReceived(Message msg)
-        {
-            SetNewServerPbk(msg.data);
-            OnChatMessageReceived(msg);
-        }
-
-        private void SetNewServerPbk(Dictionary<string, string> data)
-        {
-            string e = data["e"];
-            string n = data["n"];
-            var serverpbk = PbkFromBase64(new[] { e, n });
-
-            serverPbkParameters = serverpbk;
-        }
-
-        private string[] PbkToBase64(RSAParameters pbk)
-        {
-            string E = Convert.ToBase64String(pbk.Exponent);
-            string N = Convert.ToBase64String(pbk.Modulus);
-
-            return new[] { E, N };
-        }
-
-        private RSAParameters PbkFromBase64(string[] pbkb64)
-        {
-            string E = pbkb64[0];
-            string N = pbkb64[1];
-
-            return new RSAParameters()
-            {
-                Exponent = Convert.FromBase64String(E),
-                Modulus = Convert.FromBase64String(N),
-            };
-        }
-
-        private byte[] Encrypt(byte[] text, RSAParameters pbk)
-        {
-            rsa.ImportParameters(pbk);
-            //byte[] textEncoded = Encoding.UTF8.GetBytes(text);
-            byte[] textEncrypted = rsa.Encrypt(text, false);
-
-            return textEncrypted;
-        }
-
-        private byte[] Decrypt(byte[] textEncrypted, RSAParameters prk)
-        {
-            rsa.ImportParameters(prk);
-            byte[] textDecrypted = rsa.Decrypt(textEncrypted, false);
-
-            return textDecrypted;
-            //string textDecoded = Encoding.UTF8.GetString(textDecrypted);
-
-            //return textDecoded;
-        }
-
-        private RSAParameters GenerateNewPrk()
-        {
-            rsa = new RSACryptoServiceProvider(KeyLength);
-            var clientPrk = rsa.ExportParameters(true);
-
-            return clientPrk;
+            string userName = msg.data["user_name"];
+            string message = msg.data["message"];
+            ChangeUIThreadSafe(() => PrintMessage(userName, message));
         }
 
         private void ChangeUIThreadSafe(Action action)
