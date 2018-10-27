@@ -3,10 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
+using System.Security.Cryptography;
+using System.Numerics;
 
 namespace BPiDLab2
 {
-    public class CypherProvider
+    // ОДНОРАЗОВЫЙ БЛОКНОТ
+    // ОКАЗАЛСЯ НЕ НУЖЕН
+    public class CypherProvider  
     {
         private static readonly Dictionary<char, string> CharNumbers =
             new Dictionary<char, string>
@@ -54,6 +59,14 @@ namespace BPiDLab2
         public CypherProvider(string key)
         {
             this.key = Encode(key);
+
+            //ECDiffieHellmanCng alice = new ECDiffieHellmanCng();
+            //var x = new BigInteger();
+            // TODO
+            // Implement Diffie-Hellman РУКАМИ 
+            // 
+            //BigInteger.ModPow();
+            //BigInteger.Remainder();
         }
 
         public string Encrypt(string text)

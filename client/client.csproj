@@ -61,15 +61,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="ActionBehaviour.cs" />
-    <Compile Include="BRWindow.xaml.cs">
-      <DependentUpon>BRWindow.xaml</DependentUpon>
-    </Compile>
+    <Compile Include="DES.cs" />
+    <Compile Include="DHprovider.cs" />
     <Compile Include="User.cs" />
     <Compile Include="UserServerFormatted.cs" />
-    <Page Include="BRWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

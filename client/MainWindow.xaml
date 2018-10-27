@@ -8,12 +8,20 @@
         Title="Чат" Height="450" Width="800" Closed="Window_Closed">
     <Grid>
         <Grid Name="MainUI" Visibility="Hidden">
+            <Rectangle Name="ReadyIndicator" Fill="#0E0" HorizontalAlignment="Left" Height="28" Margin="17,374,0,0" Stroke="Black" VerticalAlignment="Top" Width="28"/>
+            <TextBlock Name="ReadyMessage" HorizontalAlignment="Left" Margin="50,380,0,0" FontWeight="Bold" FontSize="10" FontFamily="Courier New" TextWrapping="Wrap" Text="Ready" VerticalAlignment="Top" RenderTransformOrigin="0.194,0.083"/>
             <StackPanel Orientation="Vertical" VerticalAlignment="Top" Margin="0,0,513.333,0">
-                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Height="50">
-                    <Label VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontWeight="Bold">НИК</Label>
-                    <TextBox Name="UsernameBoxReadonly" IsReadOnly="True" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontSize="16" MinWidth="150"></TextBox>
-                </StackPanel>
-                <Grid Margin="10, 0">
+                <StackPanel HorizontalAlignment="Stretch" Orientation="Vertical">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Label VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontWeight="Bold" Width="50">НИК</Label>
+                        <TextBox Name="UsernameBoxReadonly" IsReadOnly="True" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" FontSize="16" MinWidth="150"></TextBox>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Label VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontWeight="Bold" Width="50">ключ</Label>
+                        <TextBox Name="KeyBox" IsReadOnly="True" HorizontalContentAlignment="Left" VerticalContentAlignment="Top" FontSize="10" MinWidth="150" TextWrapping="Wrap"></TextBox>
+                    </StackPanel>
+                 </StackPanel>
+                <Grid Margin="10, 5">
                     <Grid.RowDefinitions>
                         <RowDefinition></RowDefinition>
                         <RowDefinition Height="75"></RowDefinition>
@@ -22,14 +30,14 @@
                         <ColumnDefinition></ColumnDefinition>
                         <ColumnDefinition></ColumnDefinition>
                     </Grid.ColumnDefinitions>
-                    <Label Content="Мое зашифр."></Label>
-                    <Label Grid.Column="1" Content="Сервер зашифр."></Label>
-                    <TextBox TextWrapping="Wrap" IsReadOnly="True" Grid.Row="1" Name="ClientEncryptedOutput" Margin="0, 0, 5, 0"></TextBox>
-                    <TextBox TextWrapping="Wrap" IsReadOnly="True" Grid.Row="1" Grid.Column="1" Margin="5, 0, 0, 0" Name="ServerEncryptedOutput"></TextBox>
+                    <Label Content="Отправ. зашифр."></Label>
+                    <Label Grid.Column="1" Content="Принят. зашифр."></Label>
+                    <TextBox TextWrapping="Wrap" IsReadOnly="True" Grid.Row="1" Name="EncryptedMessageSent" Margin="0, 0, 5, 0"></TextBox>
+                    <TextBox TextWrapping="Wrap" IsReadOnly="True" Grid.Row="1" Grid.Column="1" Margin="5, 0, 0, 0" Name="EncryptedMessageReceived"></TextBox>
                 </Grid>
                 <Label Content="Текст сообщения" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Margin="0, 20, 0, 0" VerticalAlignment="Top" Width="164"/>
                 <TextBox MaxLength="120" TextWrapping="Wrap" x:Name="Input"  Height="144" AcceptsReturn="True" VerticalAlignment="Top" Margin="10,0,0,0" HorizontalAlignment="Left" Width="260"/>
-                <Button Content="Отправить сообщение" HorizontalAlignment="Center" Margin="0, 20, 0,0 " VerticalAlignment="Top" Width="143" Height="48" Name="SendMessageButton" Click="SendMessageButtonClick"/>
+                <Button Content="Отправить сообщение" HorizontalAlignment="Right" Margin="10" VerticalAlignment="Top" Width="143" Height="48" Name="SendMessageButton" Click="SendMessageButtonClick"/>
             </StackPanel>
             <RichTextBox VerticalScrollBarVisibility="Auto" x:Name="Output" IsReadOnly="True" HorizontalAlignment="Left" Margin="312,43,0,0" VerticalAlignment="Top" Height="348" Width="443">
                 <FlowDocument x:Name="ChatContent">
@@ -46,6 +54,6 @@
             <TextBox Name="UserNameInput" FontSize="16" FontWeight="Bold"  HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Left" Margin="340,187,0,0" VerticalAlignment="Top" Height="33" Width="151" Text="Санек"/>
             <Label HorizontalContentAlignment="Center" Name="UsernameLabel" FontSize="16" Content="ВВЕДИТЕ НИК" HorizontalAlignment="Left" Margin="233,151,0,0" VerticalAlignment="Top" Width="307"/>
             <Button Name="CheckUsernameButton" Content="Проверить" HorizontalAlignment="Left" Margin="282,237,0,0" VerticalAlignment="Top" Width="209" Height="36" Click="CheckUsernameButtonClick"/>
-        </Grid>
+           </Grid>
     </Grid>
 </Window>

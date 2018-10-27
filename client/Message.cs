@@ -21,12 +21,32 @@ namespace BPiDLab2
             event_type = _event_type;
         }
 
+        public Message WithUserName(string userName)
+        {
+            data["user_name"] = userName;
 
-        //public Message(string _event_type, IEnumerable<string> _message_blocks, Dictionary<string, string> _data)
-        //{
-        //    event_type = _event_type;
-        //    message_blocks = _message_blocks.ToArray();
-        //    data = _data;
-        //}
+            return this;
+        }
+
+        public Message WithTextMessage(string message)
+        {
+            data["message"] = message;
+
+            return this;
+        }
+
+        public Message With(string key, string value)
+        {
+            data[key] = value;
+
+            return this;
+        }
+
+        public static Message CreateChatMessage(string messageType, string userName, string messageText)
+        {
+            return new Message(messageType)
+                .WithUserName(userName)
+                .WithTextMessage(messageText);
+        }
     }
 }
